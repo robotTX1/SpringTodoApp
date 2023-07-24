@@ -1,0 +1,26 @@
+security:
+  key:
+    public: classpath:/certs/public.pem
+    private: classpath:/certs/private.pem
+  jwt:
+    expiryTime: 1800 # Unit: seconds Value: 30 minutes
+  refresh-token:
+    expiryTime: 604800 # Unit: seconds Value: 7 days
+
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: true
+  mvc:
+    log-resolved-exception: true
+  datasource:
+    username: postgres
+    password: password
+    url: jdbc:postgresql://localhost:5432/jwtBase
+    driver-class-name: org.postgresql.Driver
