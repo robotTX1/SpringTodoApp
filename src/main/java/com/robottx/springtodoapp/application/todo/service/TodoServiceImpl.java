@@ -3,16 +3,14 @@ package com.robottx.springtodoapp.application.todo.service;
 import com.robottx.springtodoapp.application.exception.NotFoundException;
 import com.robottx.springtodoapp.application.todo.controller.dto.CreateTodoRequest;
 import com.robottx.springtodoapp.application.todo.controller.dto.UpdateTodoRequest;
-import com.robottx.springtodoapp.model.todo.Todo;
-import com.robottx.springtodoapp.model.todo.TodoFacets;
-import com.robottx.springtodoapp.model.todo.TodoRepository;
-import com.robottx.springtodoapp.model.todo.TodoVO;
+import com.robottx.springtodoapp.model.todo.*;
 import com.robottx.springtodoapp.model.user.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,10 +26,22 @@ public class TodoServiceImpl implements TodoService {
 
     @Override
     public Page<TodoVO> listTodos(User user, TodoFacets facets) {
-        Page<Todo> todoPage = todoRepository.findByUser(user, facets.getPageable());
-        List<TodoVO> content = todoPage.getContent().stream().map(TodoVO::new).toList();
+        Page<Todo> todoPage;
+        if(facets.search() != null) {
+            TodoSpecification userSpec =
+                    new TodoSpecification(new SearchCriteria("user", "=", user));
+            TodoSpecification titleSpec =
+                    new TodoSpecification(new SearchCriteria("title", ":", facets.search()));
+            TodoSpecification descriptionSpec =
+                    new TodoSpecification(new SearchCriteria("description", ":", facets.search()));
+            todoPage =
+                    todoRepository.findAll(Specification
+                            .where(userSpec.and(titleSpec.or(descriptionSpec))), facets.getPageable());
+        } else {
+            todoPage = todoRepository.findByUser(user, facets.getPageable());
+        }
 
-        // TODO: 2023. 07. 24. Implement search functionality
+        List<TodoVO> content = todoPage.getContent().stream().map(TodoVO::new).toList();
 
         return new PageImpl<>(content, facets.getPageable(), todoPage.getTotalElements());
     }
