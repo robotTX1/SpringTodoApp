@@ -4,6 +4,7 @@ import com.robottx.springtodoapp.application.exception.NotFoundException;
 import com.robottx.springtodoapp.application.todo.controller.dto.CreateTodoRequest;
 import com.robottx.springtodoapp.application.todo.controller.dto.UpdateTodoRequest;
 import com.robottx.springtodoapp.application.todo.service.TodoService;
+import com.robottx.springtodoapp.application.util.AppUtils;
 import com.robottx.springtodoapp.model.todo.Todo;
 import com.robottx.springtodoapp.model.todo.TodoFacets;
 import com.robottx.springtodoapp.model.todo.TodoVO;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.UUID;
 
 @RestController
@@ -33,6 +35,10 @@ public class TodoController {
             @RequestParam(value = "sortDir", required = false, defaultValue = "asc") String sortDir,
             @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
             @RequestParam(value = "offset", required = false, defaultValue = "0") int offset) {
+
+        if(!AppUtils.doesClassContainField(Todo.class, sort)) {
+            sort = "createdAt";
+        }
 
         TodoFacets facets = new TodoFacets(search, sort, sortDir, limit, offset);
         return ResponseEntity.ok(todoService.listTodos(user, facets));
@@ -72,5 +78,4 @@ public class TodoController {
 
         return ResponseEntity.noContent().build();
     }
-
 }
