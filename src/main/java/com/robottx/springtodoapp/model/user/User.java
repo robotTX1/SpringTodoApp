@@ -35,6 +35,11 @@ public class User {
     @Column(length = 255, nullable = false)
     private String password;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private ProfileImage profileImage;
+
     @Builder.Default
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
@@ -69,6 +74,10 @@ public class User {
     public User possessToken(String accessToken) {
         this.accessToken = accessToken;
         return this;
+    }
+
+    public void setProfileImage(ProfileImage image) {
+        this.profileImage = image;
     }
 
     public void addRefreshToken(@NotNull RefreshToken refreshToken) {

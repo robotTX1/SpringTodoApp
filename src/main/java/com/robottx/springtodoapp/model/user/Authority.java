@@ -3,11 +3,8 @@ package com.robottx.springtodoapp.model.user;
 import jakarta.persistence.*;
 import lombok.*;
 
+@Data
 @Entity
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
 @NoArgsConstructor
 @Table(name = "authorities")
 public class Authority {
