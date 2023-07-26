@@ -1,13 +1,17 @@
-package com.robottx.springtodoapp.application.user.service;
+package com.robottx.springtodoapp.application.image.service;
 
 import com.robottx.springtodoapp.model.user.ProfileImage;
+import com.robottx.springtodoapp.model.user.ProfileImageVO;
 import com.robottx.springtodoapp.model.user.User;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.UUID;
 
 public interface ProfileImageService {
     ProfileImage uploadImage(User user, MultipartFile imageFile) throws IOException;
 
-    byte[] getImageByName(String name);
+    ProfileImageVO getImageByName(String name);
+
+    ProfileImageVO getImageById(UUID imageId);
 }

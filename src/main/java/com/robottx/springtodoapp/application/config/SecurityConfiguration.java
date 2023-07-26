@@ -46,7 +46,8 @@ public class SecurityConfiguration {
                                 .requestMatchers(
                                         "/api/v1/auth/sign-up",
                                         "/api/v1/auth/login",
-                                        "/api/v1/auth/refresh"
+                                        "/api/v1/auth/refresh",
+                                        "/api/v1/images/**"
                                 ).permitAll()
                                 .requestMatchers("/api/v1/auth/protected-user").hasAuthority("USER_READ")
                                 .requestMatchers("/api/v1/auth/protected-admin").hasAuthority("ADMIN_READ")

@@ -7,8 +7,11 @@ security:
   refresh-token:
     expiryTime: 604800 # Unit: seconds Value: 7 days
 
-
 spring:
+  servlet:
+    multipart:
+      max-file-size: 1MB
+      max-request-size: 1MB
   jpa:
     hibernate:
       ddl-auto: update

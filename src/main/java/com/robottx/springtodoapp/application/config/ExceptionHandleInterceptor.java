@@ -2,6 +2,7 @@ package com.robottx.springtodoapp.application.config;
 
 import com.robottx.springtodoapp.application.auth.exception.AuthException;
 import com.robottx.springtodoapp.application.exception.NotFoundException;
+import com.robottx.springtodoapp.application.image.exception.InvalidImageException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,6 +55,16 @@ public class ExceptionHandleInterceptor {
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handle(NotFoundException ex) {
         return createErrorResponseEntity(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidImageException.class)
+    public ResponseEntity<ErrorResponse> handle(InvalidImageException ex) {
+        return createErrorResponseEntity(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handle(MaxUploadSizeExceededException ex) {
+        return createErrorResponseEntity(HttpStatus.BAD_REQUEST, "Maximum upload size exceeded. Max: 1MB");
     }
 
     @ExceptionHandler(Exception.class)
