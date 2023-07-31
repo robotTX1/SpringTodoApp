@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -67,11 +69,21 @@ public class ExceptionHandleInterceptor {
         return createErrorResponseEntity(HttpStatus.BAD_REQUEST, "Maximum upload size exceeded. Max: 1MB");
     }
 
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handle(HttpRequestMethodNotSupportedException ex) {
+        return createErrorResponseEntity(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handle(HttpMediaTypeNotSupportedException ex) {
+        return createErrorResponseEntity(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handle(Exception e) {
-        log.error("Please contact the administrator. An unknown error occurred: {}", e.getMessage(), e);
+        log.error("An unknown error occurred: {}", e.getMessage(), e);
         return createErrorResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR,
-                "An error has occurred. Please contact the administrator.");
+                "Ooops, something went wrong. Try again later.");
     }
 
     private ResponseEntity<ErrorResponse> createErrorResponseEntity(HttpStatus httpStatus, String message) {

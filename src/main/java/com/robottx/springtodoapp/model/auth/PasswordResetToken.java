@@ -3,36 +3,35 @@ package com.robottx.springtodoapp.model.auth;
 import com.robottx.springtodoapp.model.user.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Data
 @Entity
-@Getter
-@Setter
 @Builder
-@EqualsAndHashCode
-@ToString
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class RefreshToken {
+@NoArgsConstructor
+@AllArgsConstructor
+public class PasswordResetToken {
 
     @Id
+    @Column(name = "token_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
     private UUID token;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime issuedAt;
+    private LocalDateTime expiryTime;
 
+    @CreatedDate
+    @Builder.Default
     @Column(nullable = false, updatable = false)
-    private LocalDateTime expiresAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @JoinColumn(name = "user_id")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     private User user;
+
 }

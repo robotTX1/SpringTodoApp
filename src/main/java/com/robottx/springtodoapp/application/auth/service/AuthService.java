@@ -1,9 +1,6 @@
 package com.robottx.springtodoapp.application.auth.service;
 
-import com.robottx.springtodoapp.application.auth.controller.dto.LoginRequest;
-import com.robottx.springtodoapp.application.auth.controller.dto.LoginResponse;
-import com.robottx.springtodoapp.application.auth.controller.dto.RefreshRequest;
-import com.robottx.springtodoapp.application.auth.controller.dto.SignUpRequest;
+import com.robottx.springtodoapp.application.auth.controller.dto.*;
 import com.robottx.springtodoapp.model.user.User;
 
 public interface AuthService {
@@ -16,4 +13,8 @@ public interface AuthService {
     void logout(RefreshRequest request);
 
     void logoutAll(User user);
+
+    void requestPasswordChange(ForgotPasswordRequest request, String linkBase);
+
+    void changePassword(ChangePasswordRequest request);
 }

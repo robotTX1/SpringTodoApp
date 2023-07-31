@@ -71,6 +71,10 @@ public class User {
                 .build();
     }
 
+    public void setEncodedPassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
+
     public User possessToken(String accessToken) {
         this.accessToken = accessToken;
         return this;

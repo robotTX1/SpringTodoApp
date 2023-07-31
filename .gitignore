@@ -39,3 +39,4 @@ out/
 ### Certs ###
 src/main/resources/certs/public.pem
 src/main/resources/certs/private.pem
+src/main/resources/secrets.yaml

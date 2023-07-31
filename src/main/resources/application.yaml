@@ -1,17 +1,6 @@
-security:
-  key:
-    public: classpath:/certs/public.pem
-    private: classpath:/certs/private.pem
-  jwt:
-    expiryTime: 1800 # Unit: seconds Value: 30 minutes
-  refresh-token:
-    expiryTime: 604800 # Unit: seconds Value: 7 days
-
 spring:
-  servlet:
-    multipart:
-      max-file-size: 1MB
-      max-request-size: 1MB
+  config:
+    import: secrets.yaml
   jpa:
     hibernate:
       ddl-auto: update
@@ -23,7 +12,21 @@ spring:
   mvc:
     log-resolved-exception: true
   datasource:
-    username: postgres
-    password: password
     url: jdbc:postgresql://localhost:5432/jwtBase
     driver-class-name: org.postgresql.Driver
+
+security:
+  key:
+    public: classpath:/certs/public.pem
+    private: classpath:/certs/private.pem
+  jwt:
+    expiryTime: 1800 # Unit: seconds Value: 30 minutes
+  refresh-token:
+    expiryTime: 604800 # Unit: seconds Value: 7 days
+  password-reset-token:
+    expiryTime: 3600 # Unit: seconds Value: 1 hour
+
+frontend:
+  address: localhost
+  port: 8080
+  change-password-url: /api/v1/auth/change-password?token=

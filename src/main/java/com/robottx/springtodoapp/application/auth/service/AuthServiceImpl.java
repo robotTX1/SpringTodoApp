@@ -1,19 +1,21 @@
 package com.robottx.springtodoapp.application.auth.service;
 
-import com.robottx.springtodoapp.application.auth.controller.dto.LoginRequest;
-import com.robottx.springtodoapp.application.auth.controller.dto.LoginResponse;
-import com.robottx.springtodoapp.application.auth.controller.dto.RefreshRequest;
-import com.robottx.springtodoapp.application.auth.controller.dto.SignUpRequest;
+import com.robottx.springtodoapp.application.auth.controller.dto.*;
 import com.robottx.springtodoapp.application.auth.exception.AuthException;
+import com.robottx.springtodoapp.application.email.service.EmailService;
+import com.robottx.springtodoapp.model.auth.PasswordResetToken;
 import com.robottx.springtodoapp.model.auth.RefreshToken;
 import com.robottx.springtodoapp.model.user.User;
 import com.robottx.springtodoapp.model.user.UserRepository;
+import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -25,6 +27,8 @@ public class AuthServiceImpl implements AuthService {
     private final AuthorityService authorityService;
     private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
+    private final PasswordResetTokenService passwordResetTokenService;
+    private final EmailService emailService;
 
     @Override
     @Transactional
@@ -104,6 +108,41 @@ public class AuthServiceImpl implements AuthService {
         }
 
         user.getRefreshTokens().clear();
+
+        userRepository.save(user);
+    }
+
+    @Override
+    public void requestPasswordChange(ForgotPasswordRequest request, String linkBase) {
+        Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
+
+        if(userOptional.isEmpty()) return;
+
+        User user = userOptional.get();
+
+        passwordResetTokenService.deleteTokenByUser(user);
+        PasswordResetToken token = passwordResetTokenService.createTokenForUser(user);
+
+        try {
+            emailService.sendForgotPasswordMail(user, linkBase + token.getToken());
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void changePassword(ChangePasswordRequest request) {
+        PasswordResetToken resetToken = passwordResetTokenService
+                .findByToken(request.getToken())
+                .orElseThrow(() -> new AuthException("Invalid token"));
+
+        if(!passwordResetTokenService.validateToken(resetToken))
+            throw new AuthException("Token is expired, request a new one");
+
+        User user = resetToken.getUser();
+
+        user.setEncodedPassword(passwordEncoder.encode(request.getPassword()));
+        passwordResetTokenService.deleteTokenByUser(user);
 
         userRepository.save(user);
     }

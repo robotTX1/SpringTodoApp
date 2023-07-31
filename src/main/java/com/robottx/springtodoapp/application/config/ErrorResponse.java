@@ -14,7 +14,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class ErrorResponse {
     private int status;
-    private LocalDateTime timeStamp;
+    private LocalDateTime timestamp;
     private String message;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -22,7 +22,7 @@ public class ErrorResponse {
 
     public ErrorResponse(HttpStatus status, String message) {
         this.status = status.value();
-        this.timeStamp = LocalDateTime.now();
+        this.timestamp = LocalDateTime.now();
         this.message = message;
     }
 

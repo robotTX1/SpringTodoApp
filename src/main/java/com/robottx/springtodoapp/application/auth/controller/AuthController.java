@@ -1,14 +1,13 @@
 package com.robottx.springtodoapp.application.auth.controller;
 
-import com.robottx.springtodoapp.application.auth.controller.dto.RefreshRequest;
+import com.robottx.springtodoapp.application.auth.controller.dto.*;
+import com.robottx.springtodoapp.model.frontend.FrontendConfigProperties;
 import com.robottx.springtodoapp.model.user.User;
-import com.robottx.springtodoapp.application.auth.controller.dto.LoginRequest;
-import com.robottx.springtodoapp.application.auth.controller.dto.LoginResponse;
-import com.robottx.springtodoapp.application.auth.controller.dto.SignUpRequest;
 import com.robottx.springtodoapp.application.auth.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +16,14 @@ import org.springframework.web.servlet.View;
 
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
+    private final FrontendConfigProperties frontendConfig;
 
     @PostMapping("/sign-up")
     public ModelAndView signUp(@RequestBody @Valid SignUpRequest request, HttpServletRequest httpServletRequest) {
@@ -36,7 +37,7 @@ public class AuthController {
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public LoginResponse login(@RequestBody LoginRequest request) {
+    public LoginResponse login(@RequestBody @Valid LoginRequest request) {
         return authService.login(request);
     }
 
@@ -57,6 +58,24 @@ public class AuthController {
         authService.logoutAll(user);
     }
 
+    @PostMapping("/request-password-change")
+    @ResponseStatus(HttpStatus.OK)
+    public GenericMessage requestPasswordChange(@RequestBody @Valid ForgotPasswordRequest request) {
+        String linkBase = "%s%s".formatted(frontendApplicationUrl(), frontendConfig.changePasswordUrl());
+
+        authService.requestPasswordChange(request, linkBase);
+
+        return new GenericMessage("An email has been sent to your email address");
+    }
+
+    @PostMapping("/change-password")
+    @ResponseStatus(HttpStatus.OK)
+    public GenericMessage changePassword(@RequestBody @Valid ChangePasswordRequest request) {
+        authService.changePassword(request);
+
+        return new GenericMessage("Successfully changed password");
+    }
+
     @GetMapping("/protected")
     public ResponseEntity<String> protectedResource(User user) {
         return ResponseEntity.ok("Hello from protected: " + user.getUsername());
@@ -70,5 +89,9 @@ public class AuthController {
     @GetMapping("/protected-admin")
     public ResponseEntity<String> protectedAdminResource(User user) {
         return ResponseEntity.ok("Hello from protected admin resource: " + user.getUsername());
+    }
+
+    private String frontendApplicationUrl() {
+        return "http://%s:%d".formatted(frontendConfig.address(), frontendConfig.port());
     }
 }
