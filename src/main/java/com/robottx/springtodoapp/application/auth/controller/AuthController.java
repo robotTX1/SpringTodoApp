@@ -2,14 +2,8 @@ package com.robottx.springtodoapp.application.auth.controller;
 
 import com.robottx.springtodoapp.application.auth.controller.dto.*;
 import com.robottx.springtodoapp.application.auth.service.AuthService;
-import com.robottx.springtodoapp.application.config.ErrorResponse;
 import com.robottx.springtodoapp.model.frontend.FrontendConfigProperties;
 import com.robottx.springtodoapp.model.user.User;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
