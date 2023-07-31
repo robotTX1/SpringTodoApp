@@ -49,7 +49,10 @@ public class SecurityConfiguration {
                                         "/api/v1/auth/refresh",
                                         "/api/v1/auth/request-password-change",
                                         "/api/v1/auth/change-password",
-                                        "/api/v1/images/**"
+                                        "/api/v1/images/**",
+                                        "/v3/api-docs/**",
+                                        "/swagger-ui.html",
+                                        "/swagger-ui/**"
                                 ).permitAll()
                                 .requestMatchers("/api/v1/auth/protected-user").hasAuthority("USER_READ")
                                 .requestMatchers("/api/v1/auth/protected-admin").hasAuthority("ADMIN_READ")

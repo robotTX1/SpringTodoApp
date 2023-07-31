@@ -1,6 +1,8 @@
 package com.robottx.springtodoapp.model.user;
 
 import com.robottx.springtodoapp.model.auth.RefreshToken;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -19,6 +21,7 @@ import java.util.UUID;
 @Table(name = "users")
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Hidden
 public class User {
 
     @Id
