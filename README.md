@@ -51,7 +51,7 @@ $ cd SpringTodoApp
 4. Create `secrets.yaml` in your `resources` folder and copy everything from `example-secrets.yaml` to it.
    Change example values to real ones.
 
-5. Run `generateRsaKeys.sh` in your `resources/certs` folder
+5. Run `generateRsaKeys.sh` in your `resources/certs` folder to generate RSA private and public keys
 
 6. Build project
 
