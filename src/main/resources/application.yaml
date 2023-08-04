@@ -25,8 +25,12 @@ security:
     expiryTime: 604800 # Unit: seconds Value: 7 days
   password-reset-token:
     expiryTime: 3600 # Unit: seconds Value: 1 hour
+  email-verification-token:
+    expiryTime: 3600 # Unit: seconds Value: 1 hour
+  require-email-verification: true
 
 frontend:
   address: localhost
   port: 8080
   change-password-url: /api/v1/auth/change-password?token=
+  email-verification-url: "/api/v1/auth/verify-email?token="

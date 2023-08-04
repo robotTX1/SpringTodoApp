@@ -21,6 +21,7 @@ public class EmailServiceImpl implements EmailService {
     private String email;
     private final JavaMailSender mailSender;
 
+    @Override
     public void sendForgotPasswordMail(User user, String link) throws MessagingException, UnsupportedEncodingException {
         String subject = "Forgot Password";
         String senderName = "Forgot Password Service";
@@ -37,6 +38,29 @@ public class EmailServiceImpl implements EmailService {
                     <p>Robocorp</p>
                 """.formatted(user.getUsername(), link);
 
+        sendEmail(user, subject, senderName, mailContent);
+    }
+
+    @Override
+    public void sendVerificationEmail(User user, String link) throws MessagingException, UnsupportedEncodingException {
+        String subject = "Email Verification";
+        String senderName = "Email Verification Service";
+        String mailContent = """
+                    <p>Hey, %s</p>
+                    <br>
+                    <p>Here is your email verification email:</p>
+                    <a href="%s">Verify Email</a>
+                    <br>
+                    <p>If you did not request a email verification please delete this email</p>
+                    <br>
+                    <p>Sincerely,</p>
+                    <p>Robocorp</p>
+                """.formatted(user.getUsername(), link);
+
+        sendEmail(user, subject, senderName, mailContent);
+    }
+
+    private void sendEmail(User user, String subject, String senderName, String mailContent) throws MessagingException, UnsupportedEncodingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper messageHelper = new MimeMessageHelper(message);
         messageHelper.setFrom(email, senderName);
@@ -45,5 +69,6 @@ public class EmailServiceImpl implements EmailService {
         messageHelper.setText(mailContent, true);
         mailSender.send(message);
     }
+
 
 }

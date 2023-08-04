@@ -37,6 +37,8 @@ public class User {
     @Column(length = 255, nullable = false)
     private String password;
 
+    private boolean verified;
+
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -75,6 +77,10 @@ public class User {
 
     public void setEncodedPassword(String encodedPassword) {
         this.password = encodedPassword;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
     }
 
     public User possessToken(String accessToken) {

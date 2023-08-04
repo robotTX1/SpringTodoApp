@@ -3,6 +3,7 @@ package com.robottx.springtodoapp.application.auth.service;
 import com.robottx.springtodoapp.application.auth.controller.dto.*;
 import com.robottx.springtodoapp.application.auth.exception.AuthException;
 import com.robottx.springtodoapp.application.email.service.EmailService;
+import com.robottx.springtodoapp.model.auth.EmailVerificationToken;
 import com.robottx.springtodoapp.model.auth.PasswordResetToken;
 import com.robottx.springtodoapp.model.auth.RefreshToken;
 import com.robottx.springtodoapp.model.user.User;
@@ -10,6 +11,8 @@ import com.robottx.springtodoapp.model.user.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,9 +21,13 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+
+    @Value("${security.require-email-verification}")
+    private boolean emailVerificationRequired;
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
@@ -28,6 +35,8 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
     private final PasswordResetTokenService passwordResetTokenService;
+    private final EmailVerificationService emailVerificationService;
+    private final FrontendConfigService frontendConfigService;
     private final EmailService emailService;
 
     @Override
@@ -41,7 +50,13 @@ public class AuthServiceImpl implements AuthService {
         authorityService.addAuthorityToUser(user, "USER_READ");
         authorityService.addAuthorityToUser(user, "USER_WRITE");
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        if(emailVerificationRequired) {
+            requestEmailVerification(new EmailVerificationRequest(user.getEmail()));
+        }
+
+        return savedUser;
     }
 
     @Override
@@ -53,6 +68,9 @@ public class AuthServiceImpl implements AuthService {
         if(!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new AuthException("Invalid email or password");
         }
+
+        if(!user.isVerified() && emailVerificationRequired)
+            throw new AuthException("Please verify your email address");
 
         String accessToken = jwtService.generateToken(user);
         RefreshToken refreshToken = refreshTokenService.generateToken();
@@ -113,7 +131,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void requestPasswordChange(ForgotPasswordRequest request, String linkBase) {
+    @Transactional
+    public void requestPasswordChange(ForgotPasswordRequest request) {
         Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
 
         if(userOptional.isEmpty()) return;
@@ -123,6 +142,8 @@ public class AuthServiceImpl implements AuthService {
         passwordResetTokenService.deleteTokenByUser(user);
         PasswordResetToken token = passwordResetTokenService.createTokenForUser(user);
 
+        String linkBase = frontendConfigService.getChangePasswordUrl();
+
         try {
             emailService.sendForgotPasswordMail(user, linkBase + token.getToken());
         } catch (MessagingException | UnsupportedEncodingException e) {
@@ -131,6 +152,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public void changePassword(ChangePasswordRequest request) {
         PasswordResetToken resetToken = passwordResetTokenService
                 .findByToken(request.getToken())
@@ -142,7 +164,54 @@ public class AuthServiceImpl implements AuthService {
         User user = resetToken.getUser();
 
         user.setEncodedPassword(passwordEncoder.encode(request.getPassword()));
-        passwordResetTokenService.deleteTokenByUser(user);
+        passwordResetTokenService.deleteToken(resetToken);
+
+        // Logout user
+        user.getRefreshTokens().clear();
+
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void requestEmailVerification(EmailVerificationRequest request) {
+        Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
+
+        if(userOptional.isEmpty()) return;
+
+        User user = userOptional.get();
+
+        if(user.isVerified())
+            throw new AuthException("Email is already verified");
+
+        emailVerificationService.deleteTokenByUser(user);
+        EmailVerificationToken token = emailVerificationService.createTokenForUser(user);
+
+        String linkBase = frontendConfigService.getEmailVerificationUrl();
+
+        log.info(linkBase);
+
+        try {
+            emailService.sendVerificationEmail(user, linkBase + token.getToken());
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void verifyEmail(String token) {
+        EmailVerificationToken emailVerificationToken = emailVerificationService
+                .findByToken(token)
+                .orElseThrow(() -> new AuthException("Invalid token"));
+
+        if(!emailVerificationService.validateToken(emailVerificationToken))
+            throw new AuthException("Token is expired, request a new one");
+
+        User user = emailVerificationToken.getUser();
+        user.setVerified(true);
+
+        emailVerificationService.deleteToken(emailVerificationToken);
 
         userRepository.save(user);
     }

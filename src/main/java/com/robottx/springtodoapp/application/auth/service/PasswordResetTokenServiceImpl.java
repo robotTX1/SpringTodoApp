@@ -42,6 +42,11 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
     }
 
     @Override
+    public void deleteToken(PasswordResetToken token) {
+        passwordResetTokenRepository.delete(token);
+    }
+
+    @Override
     public Optional<PasswordResetToken> findByToken(String token) {
         if(token == null) return Optional.empty();
         return passwordResetTokenRepository.findByToken(UUID.fromString(token));

@@ -14,7 +14,11 @@ public interface AuthService {
 
     void logoutAll(User user);
 
-    void requestPasswordChange(ForgotPasswordRequest request, String linkBase);
+    void requestPasswordChange(ForgotPasswordRequest request);
 
     void changePassword(ChangePasswordRequest request);
+
+    void requestEmailVerification(EmailVerificationRequest request);
+
+    void verifyEmail(String token);
 }
